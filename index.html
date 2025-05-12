@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live TV</title>
-  <link href="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     /* CSS স্টাইলিং */
@@ -37,7 +36,7 @@
       flex-direction: column;
     }
     
-    #player {
+    #videoPlayer {
       width: 100%;
       height: 0;
       padding-bottom: 56.25%;
@@ -46,12 +45,13 @@
       border-radius: 10px;
     }
     
-    #player .clappr-player {
+    #videoPlayer video {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      object-fit: contain;
     }
     
     .channel-list-container {
@@ -100,6 +100,26 @@
       border-radius: 20px;
       cursor: pointer;
     }
+    
+    .player-controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    
+    .control-btn {
+      background: #333;
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
@@ -110,7 +130,14 @@
 
   <div class="container">
     <div class="player-container">
-      <div id="player"></div>
+      <div id="videoPlayer">
+        <video id="player" controls></video>
+      </div>
+      <div class="player-controls">
+        <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
+        <button class="control-btn" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+        <button class="control-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
+      </div>
       <div style="margin-top: 15px;">
         <div id="currentChannelName">চ্যানেল নির্বাচন করুন</div>
         <div id="currentChannelCategory">বাম পাশের তালিকা থেকে চ্যানেল নির্বাচন করুন</div>
@@ -130,8 +157,6 @@
     © 2025 লাইভ টিভি প্লেয়ার | সকল স্বত্ব সংরক্ষিত
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@1.6.0/dist/hlsjs-playback.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const channels = [
@@ -156,9 +181,11 @@
       ];
 
       let currentChannelIndex = 0;
-      let player;
-      const playerContainer = document.getElementById("player");
+      const videoPlayer = document.getElementById("player");
       const channelList = document.getElementById("channelList");
+      const playPauseBtn = document.getElementById("playPauseBtn");
+      const muteBtn = document.getElementById("muteBtn");
+      const fullscreenBtn = document.getElementById("fullscreenBtn");
 
       // চ্যানেল লিস্ট রেন্ডার ফাংশন
       function renderChannelList() {
@@ -185,25 +212,54 @@
           item.classList.toggle("active", i === index);
         });
 
-        // প্লেয়ার ডেস্ট্রয় এবং নতুন প্লেয়ার তৈরি
-        if (player) player.destroy();
-
-        player = new Clappr.Player({
-          source: channel.streamUrl,
-          parentId: "#player",
-          autoPlay: true,
-          height: "100%",
-          width: "100%",
-          plugins: [ClapprHLS],
-          playback: {
-            hlsjsConfig: { liveSyncDurationCount: 3 },
-          },
-        });
+        // ভিডিও সোর্স সেট করুন
+        videoPlayer.src = channel.streamUrl;
+        videoPlayer.load();
+        videoPlayer.play().catch(e => console.error("Autoplay failed:", e));
 
         // বাটন স্টেট আপডেট
         document.getElementById("prevChannel").disabled = index === 0;
         document.getElementById("nextChannel").disabled = index === channels.length - 1;
       }
+
+      // প্লে/পজ বাটন কন্ট্রোল
+      playPauseBtn.addEventListener("click", () => {
+        if (videoPlayer.paused) {
+          videoPlayer.play();
+          playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        } else {
+          videoPlayer.pause();
+          playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+      });
+
+      // ভিডিও স্টেট পরিবর্তন হলে বাটন আপডেট
+      videoPlayer.addEventListener("play", () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      });
+
+      videoPlayer.addEventListener("pause", () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+      });
+
+      // মিউট বাটন কন্ট্রোল
+      muteBtn.addEventListener("click", () => {
+        videoPlayer.muted = !videoPlayer.muted;
+        muteBtn.innerHTML = videoPlayer.muted 
+          ? '<i class="fas fa-volume-mute"></i>' 
+          : '<i class="fas fa-volume-up"></i>';
+      });
+
+      // ফুলস্ক্রিন বাটন কন্ট্রোল
+      fullscreenBtn.addEventListener("click", () => {
+        if (videoPlayer.requestFullscreen) {
+          videoPlayer.requestFullscreen();
+        } else if (videoPlayer.webkitRequestFullscreen) {
+          videoPlayer.webkitRequestFullscreen();
+        } else if (videoPlayer.msRequestFullscreen) {
+          videoPlayer.msRequestFullscreen();
+        }
+      });
 
       // ইভেন্ট লিসেনার
       document.getElementById("prevChannel").addEventListener("click", () => {
