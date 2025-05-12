@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tv</title>
+    <!-- Clappr Player CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff5722;
+            --dark-bg: #121212;
+            --dark-secondary: #1e1e1e;
+            --dark-text: #e0e0e0;
+            --light-bg: #f5f5f5;
+            --light-secondary: #ffffff;
+            --light-text: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.light-mode {
+            background-color: var(--light-bg);
+            color: var(--light-text);
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--dark-secondary);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        body.light-mode header {
+            background-color: var(--light-secondary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--dark-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        body.light-mode .theme-toggle {
+            color: var(--light-text);
+        }
+
+        /* Main Player Area */
+        .player-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #player {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: var(--dark-secondary);
+            border-radius: 8px;
+        }
+
+        body.light-mode .player-info {
+            background-color: var(--light-secondary);
+        }
+
+        .channel-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .channel-category {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Channel List */
+        .channel-list-container {
+            width: 300px;
+            background-color: var(--dark-secondary);
+            overflow-y: auto;
+            padding: 10px;
+            border-left: 1px solid #333;
+        }
+
+        body.light-mode .channel-list-container {
+            background-color: var(--light-secondary);
+            border-left: 1px solid #ddd;
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        #channel-search {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--dark-text);
+        }
+
+        body.light-mode #channel-search {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--light-text);
+        }
+
+        #channel-search::placeholder {
+            color: var(--dark-text);
+            opacity: 0.7;
+        }
+
+        body.light-mode #channel-search::placeholder {
+            color: var(--light-text);
+            opacity: 0.7;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.7;
+        }
+
+        .channel-list {
+            list-style: none;
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .channel-item:hover {
+            background-color: rgba(255, 87, 34, 0.2);
+        }
+
+        .channel-item.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .channel-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .channel-title {
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-secondary);
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        body.light-mode footer {
+            background-color: var(--light-secondary);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .channel-list-container {
+                width: 100%;
+                height: 200px;
+                border-left: none;
+                border-top: 1px solid #333;
+            }
+
+            body.light-mode .channel-list-container {
+                border-top: 1px solid #ddd;
+            }
+
+            #player {
+                padding-bottom: 56.25%; /* Maintain 16:9 aspect ratio */
+            }
+        }
+
+        /* Channel Hopper */
+        .channel-hopper {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .hop-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .hop-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .hop-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Live Tv</div>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="player-container">
+            <div id="player"></div>
+            
+            <div class="player-info fade-in">
+                <div class="channel-name" id="currentChannelName">চ্যানেল নির্বাচন করুন</div>
+                <div class="channel-category" id="currentChannelCategory">বাম পাশের তালিকা থেকে চ্যানেল নির্বাচন করুন</div>
+            </div>
+
+            <div class="channel-hopper">
+                <button class="hop-btn" id="prevChannel" disabled><i class="fas fa-arrow-left"></i> পূর্ববর্তী</button>
+                <button class="hop-btn" id="nextChannel" disabled><i class="fas fa-arrow-right"></i> পরবর্তী</button>
+            </div>
+        </div>
+
+        <div class="channel-list-container">
+            <div class="search-container">
+                <input type="text" id="channel-search" placeholder="চ্যানেল খুঁজুন...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <ul class="channel-list" id="channelList">
+                <!-- Channels will be added here by JavaScript -->
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 লাইভ টিভি প্লেয়ার | সকল স্বত্ব সংরক্ষিত</p>
+    </footer>
+
+    <!-- Clappr Player JS -->
+    <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme Toggle
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('light-mode');
+                const icon = this.querySelector('i');
+                if (document.body.classList.contains('light-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+
+            // Sample Channel Data
+            const channels = [
+                {
+                    id: 1,
+                    name: "All Time Movies",
+                    category: "Movies",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 2,
+                    name: "Bangla Drams",
+                    category: "Movies",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 3,
+                    name: "বাংলাভিশন",
+                    category: "সাধারণ",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 4,
+                    name: "এটিএন বাংলা",
+                    category: "সাধারণ",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 5,
+                    name: "সাম্পান টিভি",
+                    category: "সাধারণ",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 6,
+                    name: "ডিবিসি নিউজ",
+                    category: "নিউজ",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 7,
+                    name: "Bangla Waz",
+                    category: "Waz",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                },
+                {
+                    id: 8,
+                    name: "Bangla Kirtan",
+                    category: "বিনোদন",
+                    logo: "https://i.postimg.cc/3RcqsQpk/tv-icon.webp",
+                    url: "https://cloudfrontnet.vercel.app/tplay/playout/209592/master.m3u8"
+                }
+            ];
+
+            // Initialize Player
+            let player;
+            let currentChannelIndex = 0;
+
+            // Render Channel List
+            const channelList = document.getElementById('channelList');
+            channels.forEach((channel, index) => {
+                const li = document.createElement('li');
+                li.className = 'channel-item slide-in';
+                li.style.animationDelay = `${index * 0.1}s`;
+                li.innerHTML = `
+                    <img src="${channel.logo}" alt="${channel.name}" class="channel-logo">
+                    <span class="channel-title">${channel.name}</span>
+                `;
+                li.addEventListener('click', () => playChannel(index));
+                channelList.appendChild(li);
+            });
+
+            // Search Functionality
+            const channelSearch = document.getElementById('channelSearch');
+            channelSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const items = channelList.querySelectorAll('.channel-item');
+                
+                items.forEach((item, index) => {
+                    const channelName = channels[index].name.toLowerCase();
+                    if (channelName.includes(searchTerm)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Play Channel Function
+            function playChannel(index) {
+                currentChannelIndex = index;
+                const channel = channels[index];
+                
+                // Update UI
+                document.getElementById('currentChannelName').textContent = channel.name;
+                document.getElementById('currentChannelCategory').textContent = channel.category;
+                
+                // Highlight selected channel
+                const channelItems = document.querySelectorAll('.channel-item');
+                channelItems.forEach((item, i) => {
+                    if (i === index) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                // Destroy previous player if exists
+                if (player) {
+                    player.destroy();
+                }
+                
+                // Create new player
+                player = new Clappr.Player({
+                    source: channel.url,
+                    parentId: "#player",
+                    autoPlay: true,
+                    height: '100%',
+                    width: '100%',
+                    plugins: [Clappr.FlasHLS],
+                    mute: false,
+                    mediacontrol: { seekbar: "#E3E3E3", buttons: "#FFFFFF" }
+                });
+                
+                // Enable hopper buttons
+                document.getElementById('prevChannel').disabled = index === 0;
+                document.getElementById('nextChannel').disabled = index === channels.length - 1;
+            }
+
+            // Channel Hopper Controls
+            document.getElementById('prevChannel').addEventListener('click', function() {
+                if (currentChannelIndex > 0) {
+                    playChannel(currentChannelIndex - 1);
+                }
+            });
+
+            document.getElementById('nextChannel').addEventListener('click', function() {
+                if (currentChannelIndex < channels.length - 1) {
+                    playChannel(currentChannelIndex + 1);
+                }
+            });
+
+            // Auto play first channel
+            if (channels.length > 0) {
+                playChannel(0);
+            }
+        });
+    </script>
+</body>
+  </html>
