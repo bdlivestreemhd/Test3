@@ -7,128 +7,226 @@
   <link href="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    /* CSS একইভাবে রাখা হয়েছে, আপনি আগের মতই ব্যবহার করতে পারেন */
-    body, html { margin: 0; padding: 0; font-family: sans-serif; background: #121212; color: #fff; height: 100vh; }
-    header, footer { background: #1e1e1e; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .container { display: flex; height: calc(100vh - 100px); }
-    .player-container { flex: 1; padding: 20px; display: flex; flex-direction: column; }
-    #player { width: 100%; height: 0; padding-bottom: 56.25%; position: relative; background: black; border-radius: 10px; }
-    #player .clappr-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .channel-list-container { width: 300px; overflow-y: auto; background: #1e1e1e; padding: 10px; }
-    .channel-item { display: flex; align-items: center; padding: 10px; cursor: pointer; border-radius: 5px; margin-bottom: 8px; }
-    .channel-item:hover { background: #333; }
-    .channel-item.active { background: #ff5722; color: white; }
-    .channel-logo { width: 40px; height: 40px; margin-right: 10px; border-radius: 50%; }
-    .channel-hopper { display: flex; justify-content: space-between; margin-top: 10px; }
-    .hop-btn { background: #ff5722; border: none; padding: 10px 15px; color: white; border-radius: 20px; cursor: pointer; }
+    /* CSS স্টাইলিং */
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #121212;
+      color: #fff;
+      height: 100vh;
+    }
+    
+    header, footer {
+      background: #1e1e1e;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .container {
+      display: flex;
+      height: calc(100vh - 100px);
+    }
+    
+    .player-container {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    #player {
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%;
+      position: relative;
+      background: black;
+      border-radius: 10px;
+    }
+    
+    #player .clappr-player {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .channel-list-container {
+      width: 300px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      padding: 10px;
+    }
+    
+    .channel-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 8px;
+    }
+    
+    .channel-item:hover {
+      background: #333;
+    }
+    
+    .channel-item.active {
+      background: #ff5722;
+      color: white;
+    }
+    
+    .channel-logo {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      border-radius: 50%;
+    }
+    
+    .channel-hopper {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    
+    .hop-btn {
+      background: #ff5722;
+      border: none;
+      padding: 10px 15px;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo">Live TV</div>
+    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+  </header>
 
-<header>
-  <div class="logo">Live TV</div>
-  <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
-</header>
-
-<div class="container">
-  <div class="player-container">
-    <div id="player"></div>
-    <div style="margin-top: 15px;">
-      <div id="currentChannelName">চ্যানেল নির্বাচন করুন</div>
-      <div id="currentChannelCategory">বাম পাশের তালিকা থেকে চ্যানেল নির্বাচন করুন</div>
+  <div class="container">
+    <div class="player-container">
+      <div id="player"></div>
+      <div style="margin-top: 15px;">
+        <div id="currentChannelName">চ্যানেল নির্বাচন করুন</div>
+        <div id="currentChannelCategory">বাম পাশের তালিকা থেকে চ্যানেল নির্বাচন করুন</div>
+      </div>
+      <div class="channel-hopper">
+        <button class="hop-btn" id="prevChannel" disabled>← পূর্ববর্তী</button>
+        <button class="hop-btn" id="nextChannel" disabled>পরবর্তী →</button>
+      </div>
     </div>
-    <div class="channel-hopper">
-      <button class="hop-btn" id="prevChannel" disabled>← পূর্ববর্তী</button>
-      <button class="hop-btn" id="nextChannel" disabled>পরবর্তী →</button>
+    <div class="channel-list-container">
+      <input type="text" id="channelSearch" placeholder="চ্যানেল খুঁজুন..." style="width:100%; padding:10px; margin-bottom:10px; border:none; border-radius:5px;">
+      <ul id="channelList" style="list-style: none; padding: 0;"></ul>
     </div>
   </div>
-  <div class="channel-list-container">
-    <input type="text" id="channelSearch" placeholder="চ্যানেল খুঁজুন..." style="width:100%; padding:10px; margin-bottom:10px; border:none; border-radius:5px;">
-    <ul id="channelList" style="list-style: none; padding: 0;"></ul>
-  </div>
-</div>
 
-<footer>
-  © 2025 লাইভ টিভি প্লেয়ার | সকল স্বত্ব সংরক্ষিত
-</footer>
+  <footer>
+    © 2025 লাইভ টিভি প্লেয়ার | সকল স্বত্ব সংরক্ষিত
+  </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@1.6.0/dist/hlsjs-playback.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const channels = [
-      { name: "News 24", category: "সংবাদ", logo: "https://via.placeholder.com/80/3498db/ffffff?text=News24", streamUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" },
-      { name: "Sports HD", category: "খেলা", logo: "https://via.placeholder.com/80/e74c3c/ffffff?text=Sports", streamUrl: "https://test-streams.mux.dev/test_001/stream.m3u8" },
-      { name: "Movie Channel", category: "সিনেমা", logo: "https://via.placeholder.com/80/2ecc71/ffffff?text=Movies", streamUrl: "https://test-streams.mux.dev/dai-discontinuity-daterange/dai.m3u8" },
-    ];
-
-    let currentChannelIndex = 0;
-    let player;
-
-    const playerContainer = document.getElementById("player");
-    const channelList = document.getElementById("channelList");
-
-    function renderChannelList() {
-      channelList.innerHTML = '';
-      channels.forEach((channel, index) => {
-        const li = document.createElement("li");
-        li.className = "channel-item";
-        li.innerHTML = `<img src="${channel.logo}" class="channel-logo"><span>${channel.name}</span>`;
-        li.addEventListener("click", () => playChannel(index));
-        channelList.appendChild(li);
-      });
-    }
-
-    function playChannel(index) {
-      currentChannelIndex = index;
-      const channel = channels[index];
-
-      document.getElementById("currentChannelName").textContent = channel.name;
-      document.getElementById("currentChannelCategory").textContent = channel.category;
-
-      document.querySelectorAll(".channel-item").forEach((item, i) => {
-        item.classList.toggle("active", i === index);
-      });
-
-      if (player) player.destroy();
-
-      player = new Clappr.Player({
-        source: channel.streamUrl,
-        parentId: "#player",
-        autoPlay: true,
-        height: "100%",
-        width: "100%",
-        plugins: [ClapprHLS],
-        playback: {
-          hlsjsConfig: { liveSyncDurationCount: 3 },
+  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@1.6.0/dist/hlsjs-playback.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const channels = [
+        { 
+          name: "News 24", 
+          category: "সংবাদ", 
+          logo: "https://via.placeholder.com/80/3498db/ffffff?text=News24", 
+          streamUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" 
         },
+        { 
+          name: "Sports HD", 
+          category: "খেলা", 
+          logo: "https://via.placeholder.com/80/e74c3c/ffffff?text=Sports", 
+          streamUrl: "https://test-streams.mux.dev/test_001/stream.m3u8" 
+        },
+        { 
+          name: "Movie Channel", 
+          category: "সিনেমা", 
+          logo: "https://via.placeholder.com/80/2ecc71/ffffff?text=Movies", 
+          streamUrl: "https://test-streams.mux.dev/dai-discontinuity-daterange/dai.m3u8" 
+        },
+      ];
+
+      let currentChannelIndex = 0;
+      let player;
+      const playerContainer = document.getElementById("player");
+      const channelList = document.getElementById("channelList");
+
+      // চ্যানেল লিস্ট রেন্ডার ফাংশন
+      function renderChannelList() {
+        channelList.innerHTML = '';
+        channels.forEach((channel, index) => {
+          const li = document.createElement("li");
+          li.className = "channel-item";
+          li.innerHTML = `<img src="${channel.logo}" class="channel-logo"><span>${channel.name}</span>`;
+          li.addEventListener("click", () => playChannel(index));
+          channelList.appendChild(li);
+        });
+      }
+
+      // চ্যানেল প্লে ফাংশন
+      function playChannel(index) {
+        currentChannelIndex = index;
+        const channel = channels[index];
+
+        document.getElementById("currentChannelName").textContent = channel.name;
+        document.getElementById("currentChannelCategory").textContent = channel.category;
+
+        // অ্যাকটিভ চ্যানেল হাইলাইট
+        document.querySelectorAll(".channel-item").forEach((item, i) => {
+          item.classList.toggle("active", i === index);
+        });
+
+        // প্লেয়ার ডেস্ট্রয় এবং নতুন প্লেয়ার তৈরি
+        if (player) player.destroy();
+
+        player = new Clappr.Player({
+          source: channel.streamUrl,
+          parentId: "#player",
+          autoPlay: true,
+          height: "100%",
+          width: "100%",
+          plugins: [ClapprHLS],
+          playback: {
+            hlsjsConfig: { liveSyncDurationCount: 3 },
+          },
+        });
+
+        // বাটন স্টেট আপডেট
+        document.getElementById("prevChannel").disabled = index === 0;
+        document.getElementById("nextChannel").disabled = index === channels.length - 1;
+      }
+
+      // ইভেন্ট লিসেনার
+      document.getElementById("prevChannel").addEventListener("click", () => {
+        if (currentChannelIndex > 0) playChannel(currentChannelIndex - 1);
       });
 
-      document.getElementById("prevChannel").disabled = index === 0;
-      document.getElementById("nextChannel").disabled = index === channels.length - 1;
-    }
-
-    // Hopper buttons
-    document.getElementById("prevChannel").addEventListener("click", () => {
-      if (currentChannelIndex > 0) playChannel(currentChannelIndex - 1);
-    });
-    document.getElementById("nextChannel").addEventListener("click", () => {
-      if (currentChannelIndex < channels.length - 1) playChannel(currentChannelIndex + 1);
-    });
-
-    // Search
-    document.getElementById("channelSearch").addEventListener("input", function () {
-      const searchTerm = this.value.toLowerCase();
-      Array.from(channelList.children).forEach((item, i) => {
-        const channel = channels[i];
-        item.style.display = channel.name.toLowerCase().includes(searchTerm) ? "flex" : "none";
+      document.getElementById("nextChannel").addEventListener("click", () => {
+        if (currentChannelIndex < channels.length - 1) playChannel(currentChannelIndex + 1);
       });
+
+      // সার্চ ফাংশনালিটি
+      document.getElementById("channelSearch").addEventListener("input", function() {
+        const searchTerm = this.value.toLowerCase();
+        Array.from(channelList.children).forEach((item, i) => {
+          const channel = channels[i];
+          item.style.display = channel.name.toLowerCase().includes(searchTerm) ? "flex" : "none";
+        });
+      });
+
+      // ইনিশিয়াল রেন্ডার
+      renderChannelList();
+      if (channels.length > 0) playChannel(0);
     });
-
-    renderChannelList();
-    if (channels.length > 0) playChannel(0);
-  });
-</script>
-
+  </script>
 </body>
 </html>
